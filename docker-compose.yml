@@ -1,0 +1,100 @@
+# 足安智能防走失系统
+# Docker Compose配置
+
+version: '3.8'
+
+services:
+  # 终端服务
+  terminal-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: terminal-service
+    ports:
+      - "8888:8888/udp"
+      - "8889:8889/tcp"
+    environment:
+      - SERVICE_NAME=device_terminal_service
+      - DEBUG=false
+      - HOST=0.0.0.0
+      - LOG_LEVEL=INFO
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=shoe_insole
+      - INFLUXDB_URL=http://influxdb:8086
+    volumes:
+      - ./logs:/var/log/terminal_service
+      - ./data:/app/data
+    depends_on:
+      - mysql
+      - redis
+      - influxdb
+    networks:
+      - terminal-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.socket(socket.AF_INET, socket.SOCK_DGRAM).connect(('127.0.0.1', 8888))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MySQL数据库
+  mysql:
+    image: mysql:8.0
+    container_name: terminal-mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=shoe_insole
+      - MYSQL_USER=shoe_insole
+      - MYSQL_PASSWORD=shoe_insole_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - terminal-network
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+
+  # Redis缓存
+  redis:
+    image: redis:7-alpine
+    container_name: terminal-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - terminal-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # InfluxDB时序数据库
+  influxdb:
+    image: influxdb:2.7
+    container_name: terminal-influxdb
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin_password
+      - DOCKER_INFLUXDB_INIT_ORG=shoe_insole
+      - DOCKER_INFLUXDB_INIT_BUCKET=location
+      - DOCKER_INFLUXDB_INIT_TOKEN=influxdb_token
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+    networks:
+      - terminal-network
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+  redis-data:
+  influxdb-data:
+
+networks:
+  terminal-network:
+    driver: bridge

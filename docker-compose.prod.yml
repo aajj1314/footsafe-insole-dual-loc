@@ -1,0 +1,127 @@
+# 足安智能防走失系统
+# 生产环境Docker Compose配置
+
+version: '3.8'
+
+services:
+  # 终端服务
+  terminal-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: terminal-service
+    ports:
+      - "8888:8888/udp"
+      - "8889:8889/tcp"
+    environment:
+      - SERVICE_NAME=device_terminal_service
+      - DEBUG=false
+      - HOST=0.0.0.0
+      - LOG_LEVEL=INFO
+      - DEVICE_PRESHARED_KEY=${DEVICE_PRESHARED_KEY}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=shoe_insole
+      - MYSQL_USER=shoe_insole
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+    volumes:
+      - terminal-logs:/var/log/terminal_service
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
+    networks:
+      - terminal-network
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # MySQL数据库
+  mysql:
+    image: mysql:8.0
+    container_name: terminal-mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=shoe_insole
+      - MYSQL_USER=shoe_insole
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - terminal-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  # Redis缓存
+  redis:
+    image: redis:7-alpine
+    container_name: terminal-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - terminal-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # InfluxDB时序数据库
+  influxdb:
+    image: influxdb:2.7
+    container_name: terminal-influxdb
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=shoe_insole
+      - DOCKER_INFLUXDB_INIT_BUCKET=location
+      - DOCKER_INFLUXDB_INIT_TOKEN=${INFLUXDB_TOKEN}
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+    networks:
+      - terminal-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql-data:
+  redis-data:
+  influxdb-data:
+  terminal-logs:
+
+networks:
+  terminal-network:
+    driver: bridge

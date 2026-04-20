@@ -45,7 +45,10 @@ export default function MapPage() {
       const startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
       const endTime = now.toISOString();
 
-      const response = await locationService.getLocationHistory(selectedDeviceImei, startTime, endTime);
+      const response = await locationService.getLocationHistory(selectedDeviceImei, {
+        start_time: startTime,
+        end_time: endTime,
+      });
       const points: GPSLocation[] = response.locations.map((loc: any) => ({
         latitude: parseFloat(loc.latitude),
         longitude: parseFloat(loc.longitude),

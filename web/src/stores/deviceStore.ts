@@ -8,7 +8,7 @@ import type { Device, GPSLocation, DeviceStatus } from '@/types';
 import * as deviceService from '@/services/device';
 import type { BindDeviceRequest } from '@/services/device';
 
-interface DeviceState {
+export interface DeviceState {
   devices: Device[];
   currentDevice: Device | null;
   total: number;
@@ -31,7 +31,7 @@ interface DeviceState {
 
 export const useDeviceStore = create<DeviceState>()(
   persist(
-    (set, get) => ({
+    (set, _get) => ({
       // 初始状态
       devices: [],
       currentDevice: null,

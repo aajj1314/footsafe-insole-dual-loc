@@ -7,6 +7,9 @@
 import { apiClient, handleApiResponse, saveToken, clearToken, getStoredToken } from './api';
 import type { User } from '@/types';
 
+// 重新导出 api 中的 getStoredToken 以便其他模块使用
+export { getStoredToken };
+
 const CURRENT_USER_KEY = 'zu_an_current_user';
 
 /**

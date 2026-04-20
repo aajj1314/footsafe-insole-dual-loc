@@ -26,7 +26,7 @@ export interface BackendContact {
 function convertBackendContact(c: BackendContact): Contact {
   return {
     id: String(c.id),
-    userId: undefined,
+    userId: '',
     name: c.name,
     phone: c.phone,
     relationship: c.relation,

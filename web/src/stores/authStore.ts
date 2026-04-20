@@ -7,7 +7,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import type { User, LoginRequest, RegisterRequest } from '@/types';
 import * as authService from '@/services/auth';
 
-interface AuthState {
+export interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;

@@ -186,7 +186,7 @@ export async function deleteFence(fenceId: string): Promise<void> {
  * @param fenceId 可选的围栏ID筛选条件
  * @returns 围栏报警列表
  */
-export async function getFenceAlarms(fenceId?: string): Promise<FenceAlarm[]> {
+export async function getFenceAlarms(_fenceId?: string): Promise<FenceAlarm[]> {
   // TODO: 后端API待实现
   return [];
 }

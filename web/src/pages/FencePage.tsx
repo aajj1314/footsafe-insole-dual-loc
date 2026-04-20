@@ -34,7 +34,7 @@ export default function FencePage() {
     setIsLoading(true);
     try {
       const data = await getFences();
-      setFences(data);
+      setFences(data.fences);
     } finally {
       setIsLoading(false);
     }
@@ -253,20 +253,21 @@ function FenceModal({
     try {
       const params: Parameters<typeof createFence>[0] = {
         name,
-        deviceId,
-        type,
+        device_imei: deviceId,
+        fence_type: type,
         enabled: true,
-        alarmEnabled: true,
+        alarm_enabled: true,
       };
 
       if (type === 'circle') {
-        params.center = { latitude: 39.9042, longitude: 116.4074 };
-        params.radius = parseInt(radius);
+        params.center_lat = '39.9042';
+        params.center_lng = '116.4074';
+        params.radius = radius;
       } else {
-        params.bounds = {
-          northEast: { latitude: 39.9142, longitude: 116.4174 },
-          southWest: { latitude: 39.8942, longitude: 116.3974 },
-        };
+        params.min_lat = '39.8942';
+        params.max_lat = '39.9142';
+        params.min_lng = '116.3974';
+        params.max_lng = '116.4174';
       }
 
       if (fence) {

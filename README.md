@@ -357,15 +357,11 @@ TCP_PORT=8889
 
 ---
 
-## 生产环境部署
+## 一键部署指南
 
-### 服务器要求
+### Docker一键部署（推荐）
 
-- **操作系统**: Ubuntu 20.04+ / CentOS 8+ / Debian 11+
-- **配置**: 2核CPU, 4GB内存, 50GB磁盘
-- **网络**: 开放端口 8000(前端)、8090(API)、8888(UDP)、8889(TCP)
-
-### 快速部署（推荐）
+只需上传项目并执行一条命令，即可在全新服务器上运行全部服务：
 
 ```bash
 # 1. 上传项目到服务器
@@ -377,82 +373,104 @@ ssh user@your-server
 # 3. 进入项目目录
 cd /path/to/Server-Full-Stack
 
-# 4. 安装系统依赖
-sudo apt update
-sudo apt install -y python3.10-venv python3-pip nodejs npm redis-server mysql-server
+# 4. 构建前端（需要Node.js）
+cd web && npm install && npm run build && cd ..
 
-# 5. 配置环境变量
-cp .env.example .env
-# 编辑 .env 文件配置数据库密码等
-
-# 6. 安装Python依赖
-pip install -r requirements.txt
-
-# 7. 安装前端依赖
-cd web && npm install && cd ..
-
-# 8. 初始化数据库
-python3 scripts/init_db.py
-
-# 9. 设置脚本执行权限
-chmod +x start.sh start-backend.sh start-frontend.sh stop.sh restart.sh
-
-# 10. 启动服务
-./start.sh
+# 5. 一键启动所有服务
+docker compose up -d
 ```
 
-### 权限问题说明
+### 服务器要求
 
-如果遇到 `.pid` 文件权限问题，使用 `sudo` 运行或手动创建：
+- **操作系统**: Ubuntu 20.04+ / CentOS 8+ / Debian 11+
+- **软件**: Docker + Docker Compose
+- **配置**: 2核CPU, 4GB内存, 50GB磁盘
+- **网络**: 开放端口 8000, 8090, 8888, 8889
 
-```bash
-# 方法1: 使用sudo运行脚本
-sudo ./start.sh
+### Docker服务架构
 
-# 方法2: 手动创建PID文件目录
-mkdir -p /path/to/Server-Full-Stack
-touch /path/to/Server-Full-Stack/.backend.pid
-touch /path/to/Server-Full-Stack/.frontend.pid
-chmod 666 /path/to/Server-Full-Stack/.backend.pid
-chmod 666 /path/to/Server-Full-Stack/.frontend.pid
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Docker Container Network                   │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌──────────────┐    ┌──────────────┐                       │
+│  │   Nginx      │───▶│  API         │                       │
+│  │  (端口8000)   │    │  (端口8090)   │                       │
+│  └──────────────┘    └──────────────┘                       │
+│                              │                               │
+│         ┌────────────────────┼────────────────────┐        │
+│         │                    │                    │        │
+│         ▼                    ▼                    ▼        │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐ │
+│  │    MySQL     │    │    Redis     │    │  InfluxDB    │ │
+│  │   (3306)     │    │   (6379)     │    │   (8086)     │ │
+│  └──────────────┘    └──────────────┘    └──────────────┘ │
+│                                                              │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │           Terminal Service (UDP 8888 / TCP 8889)     │   │
+│  └──────────────────────────────────────────────────────┘   │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Docker部署
+### 访问地址
+
+| 服务 | 地址 | 说明 |
+|------|------|------|
+| **前端** | http://服务器IP:8000 | Web管理后台 |
+| **API** | http://服务器IP:8000/api | REST API（同前端端口） |
+| **InfluxDB** | http://服务器IP:8086 | 时序数据库管理 |
+
+### 验证服务
 
 ```bash
-# 构建并启动
-docker-compose up -d
+# 查看容器状态
+docker ps
+
+# 测试API
+curl http://localhost:8090/api/health
+
+# 登录测试
+curl -X POST http://localhost:8000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin"}'
+```
+
+### 常用命令
+
+```bash
+# 停止服务
+docker compose down
+
+# 重启服务
+docker compose restart
 
 # 查看日志
-docker-compose logs -f
+docker compose logs -f
 
-# 停止服务
-docker-compose down
+# 更新并重启
+docker compose pull && docker compose up -d
 ```
 
-### 手动部署（前端生产构建）
+### 注意事项
 
-```bash
-# 1. 安装依赖
-pip install -r requirements.txt
-
-# 2. 初始化数据库
-python scripts/init_db.py
-
-# 3. 构建前端
-cd web && npm install
-npm run build
-cd ..
-
-# 4. 启动后端服务
-./start-backend.sh
-
-# 5. 前端使用 nginx 托管 build 目录
-```
+1. **首次构建**: 首次运行需要下载Docker镜像并构建，可能需要10-30分钟
+2. **数据持久化**: MySQL、Redis、InfluxDB数据存储在Docker卷中
+3. **端口冲突**: 如果本地6379端口被占用，Redis会映射到16379端口
 
 ---
 
-## 开发指南
+## 本地开发部署
+
+### 环境要求
+
+- Python 3.10+
+- Node.js 18+
+- MySQL 8.0+
+- Redis 6.0+
+
+### 安装依赖
 
 ### 运行测试
 

@@ -63,7 +63,7 @@ function convertBackendDevice(d: BackendDevice): Device {
   return {
     id: String(d.id),
     imei: d.imei,
-    userId: undefined,
+    userId: '',
     nickname: d.nickname,
     model: d.iccid,
     firmwareVersion: d.firmware_version,
@@ -144,7 +144,7 @@ export async function unbindDevice(deviceImei: string): Promise<void> {
  */
 export async function setDeviceMode(
   deviceImei: string,
-  mode: 'normal' | 'power_save' | 'tracking'
+  mode: 'normal' | 'power_save' | 'tracking' | 'low_power'
 ): Promise<void> {
   await apiClient.put(`/devices/${deviceImei}/mode`, { mode });
 }

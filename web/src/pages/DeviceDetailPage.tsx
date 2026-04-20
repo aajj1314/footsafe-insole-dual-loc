@@ -44,7 +44,7 @@ export default function DeviceDetailPage() {
     if (deviceId) {
       try {
         const backendMode = newMode === 'power_save' ? 'low_power' : newMode;
-        await setDeviceMode(deviceId, backendMode as 'normal' | 'low_power' | 'alarm' | 'sleep');
+        await setDeviceMode(deviceId, backendMode as 'normal' | 'low_power' | 'tracking' | 'power_save');
       } catch (error) {
         console.error('更新设备模式失败:', error);
         setMode(currentDevice?.mode || 'normal');

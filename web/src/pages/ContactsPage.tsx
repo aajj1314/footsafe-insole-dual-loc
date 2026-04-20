@@ -237,15 +237,13 @@ function ContactModal({
         await updateContact(contact.id, {
           name: name.trim(),
           phone: phone.trim(),
-          relationship: relationship.trim() || undefined,
-          isEmergency,
+          relation: relationship.trim() || undefined,
         });
       } else {
         await createContact({
           name: name.trim(),
           phone: phone.trim(),
-          relationship: relationship.trim() || undefined,
-          isEmergency,
+          relation: relationship.trim() || undefined,
         });
       }
       onSave();

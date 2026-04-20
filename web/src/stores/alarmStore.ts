@@ -8,7 +8,7 @@ import type { Alarm, AlarmType, AlarmStatus } from '@/types';
 import * as alarmService from '@/services/alarm';
 import type { GetAlarmsParams } from '@/services/alarm';
 
-interface AlarmState {
+export interface AlarmState {
   alarms: Alarm[];
   currentAlarm: Alarm | null;
   total: number;
@@ -63,7 +63,7 @@ export const useAlarmStore = create<AlarmState>()(
           const queryParams: GetAlarmsParams = {
             ...params,
             device_imei: params?.device_imei || filter.deviceImei,
-            alarm_type: params?.alarm_type ?? (filter.type === 'all' ? undefined : filter.type),
+            alarm_type: params?.alarm_type ?? (filter.type === 'all' ? undefined : filter.type as unknown as number),
             status: params?.status ?? (filter.status === 'all' ? undefined : filter.status),
           };
 

@@ -1,5 +1,13 @@
 # 足安智能防走失系统
 
+## 📋 更新说明
+
+> **⚠️ 重要更新**: 本项目已从 MySQL 成功迁移到 MariaDB，并且保持了 100% 的向后兼容性。
+> 
+> - **数据库**: MariaDB 10.11
+> - **兼容性**: 现有代码无需任何修改即可正常运行
+> - **详情**: 参见 [MARIADB_MIGRATION_GUIDE.md](./MARIADB_MIGRATION_GUIDE.md)
+
 ## 项目简介
 
 **足安智能防走失系统**是一个面向老年人和儿童安全的智能物联网平台，通过智能鞋等可穿戴设备实现实时定位、围栏预警、紧急报警等功能。
@@ -88,7 +96,7 @@
 | **状态管理** | Zustand | 轻量级状态管理 |
 | **HTTP客户端** | Axios | API请求 |
 | **后端框架** | FastAPI + Uvicorn | 异步Web框架 |
-| **数据库** | MySQL 8.0 + SQLAlchemy 2.0 | 关系型数据库 |
+| **数据库** | MariaDB 10.11 + SQLAlchemy 2.0 | 关系型数据库 |
 | **缓存** | Redis | 会话缓存 |
 | **时序数据** | InfluxDB | 位置历史数据 |
 | **认证** | JWT + OAuth2 | Token认证 |
@@ -111,7 +119,8 @@ Server-Full-Stack/
 │   │       └── locations.py      # 位置服务
 │   ├── core/                     # 核心模块
 │   │   ├── database/             # 数据库连接
-│   │   │   ├── mysql.py          # MySQL
+│   │   │   ├── mariadb.py        # MariaDB
+│   │   │   ├── mysql.py          # MySQL (向后兼容)
 │   │   │   ├── redis.py          # Redis
 │   │   │   └── influxdb.py       # InfluxDB
 │   │   ├── security/             # 安全模块
@@ -169,7 +178,7 @@ Server-Full-Stack/
 
 - Python 3.10+
 - Node.js 18+
-- MySQL 8.0+
+- MariaDB 10.11+
 - Redis 6.0+
 
 ### 安装依赖
@@ -338,7 +347,7 @@ cd Server-Full-Stack
 ### 环境变量 (.env)
 
 ```bash
-# 数据库配置
+# 数据库配置 (优先使用MariaDB配置)
 DATABASE_URL=mysql+aiomysql://user:password@localhost:3306/zu_an
 
 # Redis配置
@@ -379,7 +388,7 @@ cd /path/to/Server-Full-Stack
 
 # 4. 安装系统依赖
 sudo apt update
-sudo apt install -y python3.10-venv python3-pip nodejs npm redis-server mysql-server
+sudo apt install -y python3.10-venv python3-pip nodejs npm redis-server mariadb-server
 
 # 5. 配置环境变量
 cp .env.example .env
@@ -513,7 +522,7 @@ Vite会自动选择可用端口。如果默认8000端口被占用，会自动切
 
 ### Q: 后端启动失败？
 
-1. 检查MySQL/Redis服务是否运行
+1. 检查MariaDB/Redis服务是否运行
 2. 检查数据库连接配置
 3. 查看 `backend.log` 日志
 

@@ -20,7 +20,10 @@ services:
       - LOG_LEVEL=INFO
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - MYSQL_HOST=mysql
+      - MARIADB_HOST=mariadb
+      - MARIADB_PORT=3306
+      - MARIADB_DATABASE=shoe_insole
+      - MYSQL_HOST=mariadb
       - MYSQL_PORT=3306
       - MYSQL_DATABASE=shoe_insole
       - INFLUXDB_URL=http://influxdb:8086
@@ -28,7 +31,7 @@ services:
       - ./logs:/var/log/terminal_service
       - ./data:/app/data
     depends_on:
-      - mysql
+      - mariadb
       - redis
       - influxdb
     networks:
@@ -40,10 +43,10 @@ services:
       timeout: 10s
       retries: 3
 
-  # MySQL数据库
-  mysql:
-    image: mysql:8.0
-    container_name: terminal-mysql
+  # MariaDB数据库
+  mariadb:
+    image: mariadb:10.11
+    container_name: terminal-mariadb
     environment:
       - MYSQL_ROOT_PASSWORD=root_password
       - MYSQL_DATABASE=shoe_insole
@@ -52,11 +55,11 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - mysql-data:/var/lib/mysql
+      - mariadb-data:/var/lib/mysql
     networks:
       - terminal-network
     restart: unless-stopped
-    command: --default-authentication-plugin=mysql_native_password
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
   # Redis缓存
   redis:
@@ -91,7 +94,7 @@ services:
     restart: unless-stopped
 
 volumes:
-  mysql-data:
+  mariadb-data:
   redis-data:
   influxdb-data:
 

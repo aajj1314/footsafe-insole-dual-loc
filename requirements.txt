@@ -3,7 +3,7 @@
 
 # 异步框架
 asyncio-redis==0.16.0
-aiomysql==0.2.0
+aiomysql==0.2.0  # 与MariaDB兼容的异步MySQL客户端
 redis[hiredis]==5.0.1
 
 # Web服务
@@ -16,7 +16,7 @@ pydantic-settings==2.1.0
 
 # 数据库
 sqlalchemy==2.0.25
-aiomysql==0.2.0
+aiomysql==0.2.0  # 与MariaDB兼容的异步MySQL客户端
 influxdb-client==1.40.0
 
 # 加密

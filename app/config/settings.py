@@ -81,7 +81,16 @@ class Settings(BaseSettings):
     REDIS_POOL_SIZE: int = 100
     REDIS_POOL_MAX_OVERFLOW: int = 200
 
-    # ==================== MySQL配置 ====================
+    # ==================== MariaDB配置 ====================
+    MARIADB_HOST: str = "localhost"
+    MARIADB_PORT: int = 3306
+    MARIADB_DATABASE: str = "zu_an"
+    MARIADB_USER: str = "root"
+    MARIADB_PASSWORD: str = ""
+    MARIADB_POOL_SIZE: int = 50
+    MARIADB_POOL_MAX_OVERFLOW: int = 100
+    
+    # 为了向后兼容，保留MySQL配置作为别名
     MYSQL_HOST: str = "localhost"
     MYSQL_PORT: int = 3306
     MYSQL_DATABASE: str = "zu_an"
